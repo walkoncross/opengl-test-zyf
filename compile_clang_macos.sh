@@ -9,3 +9,4 @@ dst=${src%.*}.bin
 clang++ -std=c++11 -stdlib=libc++ -lglfw -lglew -lsfml-graphics -lsfml-window -lsfml-system -framework CoreVideo -framework OpenGL -framework IOKit -framework Cocoa -framework Carbon -o $dst $src
 
 chmod +x $dst
+mv $dst bin/
