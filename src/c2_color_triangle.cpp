@@ -4,31 +4,31 @@
 // Headers
 #include <GL/glew.h>
 #include <SFML/Window.hpp>
-#include <chrono>
 
 // Shader sources
 const GLchar* vertexSource = R"glsl(
     #version 150 core
     in vec2 position;
+    in vec3 color;
+    out vec3 Color;
     void main()
     {
+        Color = color;
         gl_Position = vec4(position, 0.0, 1.0);
     }
 )glsl";
 const GLchar* fragmentSource = R"glsl(
     #version 150 core
+    in vec3 Color;
     out vec4 outColor;
-    uniform vec3 triangleColor;
     void main()
     {
-        outColor = vec4(triangleColor, 1.0);
+        outColor = vec4(Color, 1.0);
     }
 )glsl";
 
 int main()
 {
-    auto t_start = std::chrono::high_resolution_clock::now();
-
     sf::ContextSettings settings;
     settings.depthBits = 24;
     settings.stencilBits = 8;
@@ -51,9 +51,9 @@ int main()
     glGenBuffers(1, &vbo);
 
     GLfloat vertices[] = {
-         0.0f,  0.5f,
-         0.5f, -0.5f,
-        -0.5f, -0.5f
+         0.0f,  0.5f, 1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f
     };
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -80,10 +80,11 @@ int main()
     // Specify the layout of the vertex data
     GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
     glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
 
-    // Get the location of the color uniform
-    GLint uniColor = glGetUniformLocation(shaderProgram, "triangleColor");
+    GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
+    glEnableVertexAttribArray(colAttrib);
+    glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
 
     bool running = true;
     while (running)
@@ -98,12 +99,6 @@ int main()
                 break;
             }
         }
-
-        // Set the color of the triangle
-        auto t_now = std::chrono::high_resolution_clock::now();
-        float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
-        
-        glUniform3f(uniColor, (sin(time * 4.0f) + 1.0f) / 2.0f, 0.0f, 0.0f);
 
         // Clear the screen to black
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -123,7 +118,7 @@ int main()
     glDeleteBuffers(1, &vbo);
 
     glDeleteVertexArrays(1, &vao);
-
+    
     window.close();
 
     return 0;

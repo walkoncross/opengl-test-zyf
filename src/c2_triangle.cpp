@@ -4,7 +4,6 @@
 // Headers
 #include <GL/glew.h>
 #include <SFML/Window.hpp>
-#include <chrono>
 
 // Shader sources
 const GLchar* vertexSource = R"glsl(
@@ -18,17 +17,14 @@ const GLchar* vertexSource = R"glsl(
 const GLchar* fragmentSource = R"glsl(
     #version 150 core
     out vec4 outColor;
-    uniform vec3 triangleColor;
     void main()
     {
-        outColor = vec4(triangleColor, 1.0);
+        outColor = vec4(1.0, 1.0, 1.0, 1.0);
     }
 )glsl";
 
 int main()
 {
-    auto t_start = std::chrono::high_resolution_clock::now();
-
     sf::ContextSettings settings;
     settings.depthBits = 24;
     settings.stencilBits = 8;
@@ -82,9 +78,6 @@ int main()
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-    // Get the location of the color uniform
-    GLint uniColor = glGetUniformLocation(shaderProgram, "triangleColor");
-
     bool running = true;
     while (running)
     {
@@ -98,12 +91,6 @@ int main()
                 break;
             }
         }
-
-        // Set the color of the triangle
-        auto t_now = std::chrono::high_resolution_clock::now();
-        float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
-        
-        glUniform3f(uniColor, (sin(time * 4.0f) + 1.0f) / 2.0f, 0.0f, 0.0f);
 
         // Clear the screen to black
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -123,7 +110,7 @@ int main()
     glDeleteBuffers(1, &vbo);
 
     glDeleteVertexArrays(1, &vao);
-
+    
     window.close();
 
     return 0;
